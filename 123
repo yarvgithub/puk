@@ -1,0 +1,48 @@
+import cv2
+from skimage.metrics import structural_similarity
+import math
+from PIL import ImageGrab
+import time
+
+cap = cv2.VideoCapture('1.mp4')
+
+success, image = cap.read()
+# legacy cv2.imwrite('1.png',image) image = cv2.imread('1.png')
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# cv2.imwrite('1.png',gray[231:257, 53:66])
+# cv2.imwrite('1.png',gray[28:53, 1821:1835])
+image1png = image[28:53, 1821:1835]
+actionframe = '0'
+count = 0
+
+def structural_sim(x, y):
+    sim, diff = structural_similarity(x, y, full=True)
+    return sim
+
+success, image = cap.read()
+
+while success:
+    cv2.imwrite('2.png',image)
+    image2 = cv2.imread('2.png')
+    gray = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+    thresh, image_black = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
+    gray = image_black
+    cv2.imwrite('2.png', gray[28:53, 1821:1835])
+    image1 = cv2.imread('1.png', 0)
+    image2 = cv2.imread('2.png', 0)
+    ssim1 = structural_sim(image1, image2)
+    if ssim1 <= 0.55:
+        actionframe += '1'
+    else: actionframe +='0'
+    count += 1
+
+    cv2.imwrite('1.png', gray[28:53, 1821:1835])
+    success, image = cap.read()
+    print(count)
+print(actionframe)
+print(count)
+text_file = open("1.txt", "w")
+text_file.write(actionframe)
+text_file.close()
+cap.release()
+cv2.destroyAllWindows()
